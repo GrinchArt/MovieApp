@@ -1,0 +1,88 @@
+﻿@model IEnumerable<MovieAppWebMvc.Models.FilmDetail>
+@{
+    ViewData["Title"] = "IndexFilms";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>IndexFilms</h1>
+
+<p>
+    <a asp-action="Create">Create New</a>
+</p>
+
+<form method="get">
+    <input type="text" name="searchString" placeholder="Пошук за автором" value="@ViewData["CurrentFilter"]" />
+    <select name="sortOrder" id="sortOrder">
+        <option value="Date">Сортувати за датою</option>
+    </select>
+    <input type="submit" value="Пошук" />
+</form>
+
+<table id="filmsTable" class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Name</th>
+            <th>Director</th>
+            <th>Release</th>
+            <th>Categories</th>
+            <th>Actions</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>@item.Director</td>
+                <td>@item.Release.ToShortDateString()</td>
+                <td>@string.Join(", ", item.Categories)</td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                    @using (Html.BeginForm("Delete", "Films", new { id = item.Id }, FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger btn-sm">Delete</button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
+
+@section Scripts {
+    <script>
+        $(document).ready(function () {
+            $('input[type="submit"]').click(function (e) {
+                e.preventDefault();
+
+                var searchString = $('input[name="searchString"]').val();
+                var sortOrder = $('#sortOrder').val();
+
+                $.ajax({
+                    url: '/Films/Index',
+                    type: 'GET',
+                    data: {
+                        searchString: searchString,
+                        sortOrder: sortOrder
+                    },
+                    success: function (data) {
+                        $('#filmsTable tbody').empty();
+                        $.each(data, function (i, item) {
+                            var row = '<tr>' +
+                                '<td>' + item.Id + '</td>' +
+                                '<td>' + item.Name + '</td>' +
+                                '<td>' + item.Director + '</td>' +
+                                '<td>' + item.Release + '</td>' +
+                                '<td>' + item.Categories.join(', ') + '</td>'
+                                '</tr>';
+                            $('#filmsTable tbody').append(row);
+                        });
+                    }
+                });
+            });
+        });
+    </script>
+}
+

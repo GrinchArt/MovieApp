@@ -1,0 +1,80 @@
+﻿<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Add Category to Film</title>
+    <script>
+        const baseUrl = 'http://localhost:5236';
+        document.addEventListener('DOMContentLoaded', function () {
+            
+            fetchFilms(baseUrl);
+            fetchCategories(baseUrl);
+        });
+
+        async function fetchFilms(baseUrl) {
+            const response = await fetch(`${baseUrl}/api/films`);
+            const films = await response.json();
+            const select = document.getElementById('filmId');
+            films.forEach(film => {
+                const option = document.createElement('option');
+                option.value = film.id;
+                option.textContent = film.name;
+                select.appendChild(option);
+            });
+        }
+
+        async function fetchCategories(baseUrl) {
+            const response = await fetch(`${baseUrl}/api/categories`);
+            const categories = await response.json();
+            const select = document.getElementById('categoryIds');
+            categories.forEach(category => {
+                const option = document.createElement('option');
+                option.value = category.id;
+                option.textContent = category.name;
+                select.appendChild(option);
+            });
+        }
+
+        async function addCategoryToFilm() {
+            const filmId = document.getElementById('filmId').value;
+            const select = document.getElementById('categoryIds');
+            const categoryIds = Array.from(select.selectedOptions).map(option => option.value);
+            try {
+                const response = await fetch(`${baseUrl}/api/filmCategories`, {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
+                    },
+                    body: JSON.stringify({ FilmId: filmId, CategoryId: categoryIds})
+                });
+                if (response.ok) {
+                    alert('Categories added successfully!');
+                } else {
+                    const errorData = await response.json();
+                    alert(`Failed to add categories to film. Server responded with error: ${errorData}`);
+                }
+            } catch (error) {
+                console.error("Could not add categories to film:", error);
+                alert('Failed to add categories to film. Please check the console for more details.');
+            }
+        }
+    </script>
+</head>
+<body>
+    <h1>Add Category to Film</h1>
+    <form onsubmit="event.preventDefault(); addCategoryToFilm();">
+        <label for="filmId">Film:</label>
+        <select id="filmId" required>
+            <option value="">Select a Film</option>
+        </select>
+
+        <label for="categoryIds">Category:</label>
+        <select multiple  id="categoryIds" required>
+            <option value="">Select a Category</option>
+        </select>
+
+        <button type="submit">Add Category to Film</button>
+    </form>
+</body>
+</html>

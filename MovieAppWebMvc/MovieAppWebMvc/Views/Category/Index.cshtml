@@ -1,0 +1,50 @@
+﻿@model List<MovieAppWebMvc.Models.CategoryDetail>
+
+@{
+    ViewData["Title"] = "Перелік Категорій";
+    Layout = "~/Views/Shared/_Layout.cshtml";
+}
+
+<h1>@ViewData["Title"]</h1>
+
+<p>
+    <a asp-action="Create">Створити нову категорію</a>
+</p>
+
+<table class="table">
+    <thead>
+        <tr>
+            <th>ID</th>
+            <th>Назва</th>
+            <th>Батьківська категорія</th>
+            <th>Кількість фільмів</th>
+            <th>Рівень вкладеності</th>
+            <th>Дії</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>@item.Id</td>
+                <td>@item.Name</td>
+                <td>
+                    @if (item.ParentCategoryId != null)
+                    {
+                        <a asp-action="Details" asp-controller="Category" asp-route-id="@item.ParentCategoryId">@item.ParentCategoryId</a>
+                    }
+                </td>
+                <td>@item.FilmsCount</td>
+                <td>@item.NestingLevel</td>
+                <td>
+                    @Html.ActionLink("Edit", "Edit", new { id = item.Id }) |
+                    @using (Html.BeginForm("Delete", "Category", new { id = item.Id }, FormMethod.Post))
+                    {
+                        @Html.AntiForgeryToken()
+                        <button type="submit" class="btn btn-danger btn-sm">Видалити</button>
+                    }
+                </td>
+            </tr>
+        }
+    </tbody>
+</table>
